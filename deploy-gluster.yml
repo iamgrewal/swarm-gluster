@@ -1,0 +1,18 @@
+---
+- name: Install gluster nodes
+  hosts: gluster_nodes
+  become: true
+  become_method: sudo
+  vars_files:
+    - ./vars/external.yml
+  roles:
+    - gluster
+
+- name: add gluster clients
+  hosts: docker
+  become: true
+  become_method: sudo
+  vars_files:
+    - ./vars/external.yml
+  roles:
+    - add-gluster-client

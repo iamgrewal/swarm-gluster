@@ -1,0 +1,15 @@
+---
+- name: Initialize swarm && add managers nodes
+  hosts: swarm_managers
+  become: true
+  become_method: sudo
+  roles:
+    - swarm-init
+    - swarm-add-mgn
+
+- name: Add Workers nodes
+  hosts: swarm_workers
+  become: true
+  become_method: sudo
+  roles:
+    - swarm-add-workers

@@ -1,0 +1,47 @@
+---
+- name: Create a new ext4 primary partition
+  community.general.parted:
+    device: /dev/sdb
+    number: 1
+    state: present
+    fs_type: ext4
+
+- name: add /opt/docker
+  file:
+    path: /opt/docker
+    state: directory
+    force: true
+
+- name: add /var entry to /etc/fstab
+  mount:
+    path: /opt/docker
+    src: UUID="{{ ansible_devices.sdb.partitions.sdb1.uuid }}"
+    fstype: ext4
+    opts: defaults
+    dump: '1'
+    state: present
+  when: ansible_devices.sdb.partitions.sdb1 is defined
+    
+- name: Stop service docker, if started
+  service:
+    name: docker
+    state: stopped
+
+- name: Recursively remove directory docker
+  file:
+    path: /var/lib/docker
+    state: absent
+  ignore_errors: true
+
+- name: Create a symbolic link
+  file:
+    src: /opt/docker
+    dest: /var/lib/docker
+    state: link
+    force: yes
+
+- name: Start service docker, if not started
+  service:
+    name: docker
+    state: started
+

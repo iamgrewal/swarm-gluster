@@ -1,0 +1,29 @@
+---
+- name: Update and Upgrade all Hosts
+  gather_facts: false
+  become: true
+  become_method: sudo
+  hosts: ubuntu
+  roles:
+     - host-settings
+
+- name: NTP setings
+  hosts: ubuntu
+  become: true
+  become_method: sudo
+  roles:
+    - geerlingguy-ntp
+
+- name: Install docker managers and workers
+  hosts: docker
+  become: true
+  become_method: sudo
+  roles:
+    - install-docker
+
+- name: Install docker managers and workers
+  hosts: swarm_workers
+  become: true
+  become_method: sudo
+  roles:
+    - add-new-part

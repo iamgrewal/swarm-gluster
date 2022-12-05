@@ -1,0 +1,12 @@
+---
+TZ: "Europe/Moscow"
+PUID: 1000
+PGID: 1000
+ansible_user: ubuntu
+app_domain_name: binetc.store
+device2_hdd_dev: /dev/sdb
+gluster_volume_path: /opt/glusterfs/bricks
+gluster_volume_name: gfs
+gluster_mount_path: /mnt/gfs
+appsdir: /home/ubuntu/stacks/appsdata
+stacksdir: /home/ubuntu/stacks

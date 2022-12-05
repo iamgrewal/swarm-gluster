@@ -1,0 +1,35 @@
+---
+- name: Verify directory exists (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  file:
+    path: "/home/{{ansible_user}}/stacks"
+    state: directory
+    force: true
+
+- name: Create docker-compose stack file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: socket.j2
+    dest: /home/{{ansible_user}}/stacks/socket-stack.yml
+    mode: 0775
+    force: true
+
+- name: Install jsondiff Python library
+  when: inventory_hostname == groups['swarm_managers'][0]
+  pip:
+    name: jsondiff
+
+- name: Install pyyaml Python library
+  when: inventory_hostname == groups['swarm_managers'][0]
+  pip:
+    name: pyyaml
+
+- name: Deploy stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    state: present
+    name: socket
+    prune: true
+    with_registry_auth: true
+    compose:
+      - /home/{{ansible_user}}/stacks/socket-stack.yml

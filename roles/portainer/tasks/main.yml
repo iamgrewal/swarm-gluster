@@ -1,0 +1,27 @@
+---
+- name: Verify portainer directory exists
+  become: true
+  become_method: sudo
+  when: inventory_hostname == groups['swarm_managers'][0]
+  file:
+    path: /mnt/gfs/portainer
+    state: directory
+    force: true
+
+- name: Create portainer docker-compose stack file  (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: portainer.j2
+    dest: /home/{{ansible_user}}/stacks/portainer-stack.yml
+    mode: 0775
+    force: true
+
+- name: Deploy stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    state: present
+    name: portainer
+    prune: true
+    with_registry_auth: true
+    compose:
+      - /home/{{ansible_user}}/stacks/portainer-stack.yml

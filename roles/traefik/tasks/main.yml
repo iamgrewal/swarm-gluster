@@ -1,0 +1,54 @@
+---   
+- name: Synchronization of files folder (on first gluster node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  become: true
+  become_method: sudo
+  synchronize:
+    src: ./
+    dest: /mnt/gfs/traefik
+    
+- name: Verify logs directory exists
+  when: inventory_hostname == groups['swarm_managers'][0]
+  become: true
+  become_method: sudo
+  file:
+    path: /mnt/gfs/logs/traefik
+    state: directory
+    
+- name: Verify logs directory exists
+  when: inventory_hostname == groups['swarm_managers'][0]
+  file:
+    path: /home/{{ansible_user}}/stacks
+    state: directory
+
+- name: Install jsondiff Python library
+  when: inventory_hostname == groups['swarm_managers'][0]
+  become: true
+  become_method: sudo
+  pip:
+    name: jsondiff
+
+- name: Install pyyaml Python library
+  when: inventory_hostname == groups['swarm_managers'][0]
+  become: true
+  become_method: sudo
+  pip:
+    name: pyyaml
+    
+- name: Create docker-compose stack file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  template:
+    src: traefik-stack.j2
+    dest: /home/{{ansible_user}}/stacks/traefik-stack.yml
+    mode: 0775
+    force: true
+
+- name: Deploy stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    state: present
+    name: traefik
+    prune: true
+    with_registry_auth: true
+    compose:
+      - /home/{{ansible_user}}/stacks/traefik-stack.yml

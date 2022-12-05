@@ -1,0 +1,30 @@
+version: "3.9"
+
+networks:
+  t2_proxy:
+    name: t2_proxy
+    external: true
+    
+services:
+  whoami:
+    image: registry.onfan.online/whoami
+    command:
+      - --port=8082 # Our service listens on 8082
+    networks:
+      - t2_proxy
+    deploy:
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.whoami-rtr.entrypoints: https
+        traefik.http.routers.whoami-rtr.rule: Host(`whoami.binetc.store`)
+        traefik.http.routers.whoami-rtr.service: whoami-svc
+        traefik.http.routers.whoami-rtr.tls: "true"
+        traefik.http.routers.whoami-rtr.tls.domains{{ '[0]' }}.sans: "*.binetc.store"
+        traefik.http.routers.whoami-rtr.middlewares: chain-no-auth@file
+        traefik.http.services.whoami-svc.loadbalancer.server.port: 8082
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]

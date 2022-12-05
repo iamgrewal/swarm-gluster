@@ -1,0 +1,17 @@
+---
+- name: Update and Upgrade all Hosts
+  gather_facts: false
+  become: true
+  become_method: sudo
+  hosts: swarm_managers
+  roles:
+     - remove-stack
+     
+- name: deploy apps
+  hosts: swarm_managers
+  vars_files:
+    - ./vars/external.yml
+  roles:
+    - traefik
+    - portainer
+    - whoami

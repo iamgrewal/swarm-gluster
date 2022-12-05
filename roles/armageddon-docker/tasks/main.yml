@@ -1,0 +1,25 @@
+- name: Remove stack
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    name: traefik
+    state: absent
+
+- name:  Docker stop and docker rm 
+  shell: docker stop $(docker ps -aq) && docker rm $(docker ps -aq) 
+  ignore_errors: true
+
+- name:  Docker network prune
+  shell: docker network prune -f 
+  ignore_errors: true
+
+- name:  Docker rmi
+  shell: docker rmi -f $(docker images --filter dangling=true -qa)
+  ignore_errors: true  
+
+- name:  Docker volume rm
+  shell: docker volume rm $(docker volume ls --filter dangling=true -q)
+  ignore_errors: true  
+
+- name:  Docker rmi -f
+  shell: docker rmi -f $(docker images -qa)
+  ignore_errors: true  

@@ -1,0 +1,91 @@
+---
+#- name: Delete old Gluster volume 
+#  file:
+#    path: "{{gluster_volume_path}}/{{inventory_hostname}}/brick"
+#    state: absent
+#    force: true 
+
+- name: Create XFS Path {{gluster_volume_path}}/{{inventory_hostname}}
+  file:
+    path: "{{gluster_volume_path}}/{{inventory_hostname}}"
+    state: directory
+
+- name: Create a XFS filesystem on {{device2_hdd_dev}}
+  filesystem:
+    fstype: xfs
+    dev: "{{device2_hdd_dev}}"
+
+- name: Mount XFS volume {{device2_hdd_dev}} to {{gluster_volume_path}}/{{inventory_hostname}}
+  mount:
+    path: "{{gluster_volume_path}}/{{inventory_hostname}}"
+    src: "{{device2_hdd_dev}}"
+    fstype: xfs
+    state: mounted
+
+- name: Install Gluster and dependencies
+  apt:
+    pkg:
+      - xfsprogs
+      - attr
+      - glusterfs-server
+      - glusterfs-common
+      - glusterfs-client
+    state: present
+    force_apt_get: true
+    update_cache: yes
+
+- name: Enable Gluster service
+  systemd:
+    name: glusterd
+    enabled: yes
+    state: started
+
+- name: Check if Gluster volume is initialized
+  stat:
+    path: "{{gluster_volume_path}}/{{inventory_hostname}}/brick"
+  register: glustervolume
+
+- name: Verify Gluster volume path
+  file:
+    path: "{{gluster_volume_path}}/{{inventory_hostname}}/brick"
+    state: directory
+
+- name: Initialize Gluster Cluster (on first node)
+  when: glustervolume.stat.exists == false and inventory_hostname == groups['gluster_nodes'][0]
+  loop: "{{ groups['gluster_nodes'] }}"
+  shell: gluster peer probe {{ item }}
+  
+- name: Create Gluster Volume (on first node)
+  when: glustervolume.stat.exists == false and inventory_hostname == groups['gluster_nodes'][0]
+  shell: >
+    gluster volume create {{gluster_volume_name}} \
+    replica 3 \
+    {{groups['gluster_nodes'][0]}}:{{gluster_volume_path}}/{{groups['gluster_nodes'][0]}}/brick \
+    {{groups['gluster_nodes'][1]}}:{{gluster_volume_path}}/{{groups['gluster_nodes'][1]}}/brick \
+    {{groups['gluster_nodes'][2]}}:{{gluster_volume_path}}/{{groups['gluster_nodes'][2]}}/brick
+
+- name: Secure Gluster Volume (on first node)
+  when: inventory_hostname == groups['gluster_nodes'][0]
+  shell: >
+    gluster volume set {{gluster_volume_name}} auth.allow {{groups['gluster_nodes'][0]}},{{groups['gluster_nodes'][1]}},{{groups['gluster_nodes'][2]}},{{groups.swarm_managers[0]}},{{groups.swarm_managers[1]}},{{groups.swarm_managers[2]}},{{groups.swarm_workers[0]}},{{groups.swarm_workers[1]}},{{groups.swarm_workers[2]}}
+
+- name: Start Gluster Volume (on first node)
+  when: glustervolume.stat.exists == false and inventory_hostname == groups['gluster_nodes'][0]
+  shell: gluster volume start {{gluster_volume_name}}
+
+- name: Wait 60s for Gluster volume to be replicated
+  when: glustervolume.stat.exists == false and inventory_hostname == groups['gluster_nodes'][0]
+  shell: sleep 60
+
+- name: Verify Gluster mount path
+  file:
+    path: "{{gluster_mount_path}}"
+    state: directory
+
+- name: Mount Gluster volume {{gluster_volume_name}} to {{gluster_mount_path}}
+  mount:
+    path: "{{gluster_mount_path}}"
+    src: "localhost:/{{gluster_volume_name}}"
+    fstype: glusterfs
+    opts: defaults,_netdev,backupvolfile-server=localhost
+    state: mounted

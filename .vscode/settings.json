@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook": "file:///y%3A/swarm/deploy-swarm.yml"
+    }
+}

@@ -1,0 +1,13 @@
+- name: Create new user
+  become: true
+  user: name=docker
+        group=sudo
+        shell=/bin/bash
+        generate_ssh_key=no
+        state=present
+
+- name: Set no password
+  become: true
+  copy: src=sudoers
+        dest=/etc/sudoers.d
+        mode=0440  
