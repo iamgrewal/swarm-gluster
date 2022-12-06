@@ -1,13 +1,19 @@
+---
+- name: Remove  whoami stack from a compose file (on first swarm node)
+  when: inventory_hostname == groups['swarm_managers'][0]
+  docker_stack:
+    name: whoami
+    state: absent
 - name: Remove portainer stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   docker_stack:
     name: portainer
     state: absent
 
-- name: Remove  whoami stack from a compose file (on first swarm node)
+- name: Remove trafik stack from a compose file (on first swarm node)
   when: inventory_hostname == groups['swarm_managers'][0]
   docker_stack:
-    name: whoami
+    name: authelia
     state: absent
 
 - name: Remove trafik stack from a compose file (on first swarm node)

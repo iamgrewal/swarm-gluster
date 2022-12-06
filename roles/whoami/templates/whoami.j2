@@ -9,7 +9,7 @@ services:
   whoami:
     image: registry.onfan.online/whoami
     command:
-      - --port=8082 # Our service listens on 8082
+      - --port=8082
     networks:
       - t2_proxy
     deploy:
@@ -20,8 +20,31 @@ services:
         traefik.http.routers.whoami-rtr.service: whoami-svc
         traefik.http.routers.whoami-rtr.tls: "true"
         traefik.http.routers.whoami-rtr.tls.domains{{ '[0]' }}.sans: "*.binetc.store"
-        traefik.http.routers.whoami-rtr.middlewares: chain-no-auth@file
+        traefik.http.routers.whoami-rtr.middlewares: chain-authelia@file
         traefik.http.services.whoami-svc.loadbalancer.server.port: 8082
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+  
+  whoami-pub:
+    image: registry.onfan.online/whoami
+    command:
+      - --port=8083
+    networks:
+      - t2_proxy
+    deploy:
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.whoami-pub-rtr.entrypoints: https
+        traefik.http.routers.whoami-pub-rtr.rule: Host(`whoami-pub.binetc.store`)
+        traefik.http.routers.whoami-pub-rtr.service: whoami-pub-svc
+        traefik.http.routers.whoami-pub-rtr.tls: "true"
+        traefik.http.routers.whoami-pub-rtr.tls.domains{{ '[0]' }}.sans: "*.binetc.store"
+        traefik.http.routers.whoami-pub-rtr.middlewares: chain-no-auth@file
+        traefik.http.services.whoami-pub-svc.loadbalancer.server.port: 8083
       restart_policy:
         condition: on-failure
       mode: replicated

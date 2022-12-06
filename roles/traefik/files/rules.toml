@@ -47,9 +47,10 @@
 
   [http.middlewares.middlewares-authelia]
     [http.middlewares.middlewares-authelia.forwardAuth]
-      address = "http://authelia:9091/api/verify?rd=https://authelia.example.com"
+      address = "http://authelia:9091/api/verify?rd=https://authelia.binetc.store"
       trustForwardHeader = true
       authResponseHeaders = ["Remote-User", "Remote-Groups"]
+      #Remote-User,Remote-Groups,Remote-Name,Remote-Email
 
   [http.middlewares.chain-no-auth]
     [http.middlewares.chain-no-auth.chain]

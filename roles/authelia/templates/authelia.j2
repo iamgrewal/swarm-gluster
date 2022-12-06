@@ -1,0 +1,32 @@
+version: "3.9"
+
+networks:
+  t2_proxy:
+    name: t2_proxy
+    external: true
+
+services:
+  authelia:
+    image: registry.onfan.online/authelia
+    volumes:
+      - /mnt/gfs/authelia:/config
+    networks:
+      - t2_proxy
+    environment:
+      - TZ={{TZ}}
+    deploy:
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.authelia-rtr.entrypoints: https
+        traefik.http.routers.authelia-rtr.rule: Host(`authelia.binetc.store`)
+        traefik.http.routers.authelia-rtr.service: authelia-svc
+        traefik.http.routers.authelia-rtr.tls: "true"
+        traefik.http.routers.authelia-rtr.tls.domains{{ '[0]' }}.sans: "*.binetc.store"
+        traefik.http.routers.authelia-rtr.middlewares: middlewares-authelia@file
+        traefik.http.services.authelia-svc.loadbalancer.server.port: 9091
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]

@@ -38,6 +38,7 @@ services:
         traefik.http.routers.traefik-rtr.rule: Host(`traefik.binetc.store`)
         traefik.http.routers.traefik-rtr.tls: "true"
         traefik.http.routers.traefik-rtr.tls.domains{{ '[0]' }}.sans: "*.binetc.store"
+        traefik.http.routers.traefik-rtr.middlewares: middlewares-authelia@file
         ## Services - API
         traefik.http.routers.traefik-rtr.service: api@internal
         traefik.http.services.api-dummy.loadbalancer.server.port: 8088
