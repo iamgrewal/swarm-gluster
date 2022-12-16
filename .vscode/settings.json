@@ -1,5 +1,11 @@
 {
     "yaml.schemas": {
-        "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook": "file:///y%3A/swarm/deploy-swarm.yml"
+        "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook": [
+            "file:///y%3A/swarm/deploy-apps.yml",
+            "file:///y%3A/swarm/all.yml",
+            "file:///y%3A/swarm/deploy-gluster.yml",
+            "file:///y%3A/swarm/deploy-swarm.yml",
+            "file:///y%3A/swarm/pre-settings.yml"
+        ]
     }
 }
