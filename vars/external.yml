@@ -1,9 +1,9 @@
 ---
-TZ: "Europe/Moscow"
-PUID: 1000
-PGID: 1000
+TZ: "America/Detroit"
+PUID: 118
+PGID: 123
 ansible_user: ubuntu
-app_domain_name: binetc.store
+app_domain_name: po1.me
 device2_hdd_dev: /dev/sdb
 gluster_volume_path: /opt/glusterfs/bricks
 gluster_volume_name: gfs
